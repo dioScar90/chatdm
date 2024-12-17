@@ -1,7 +1,12 @@
-import { Link, Outlet, createRootRoute } from '@tanstack/react-router'
+import { Link, Outlet, createRootRoute, createRootRouteWithContext } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 
-export const Route = createRootRoute({
+type MyRouterContext = {
+  isAuthenticated: boolean
+  user: { id: number }
+}
+
+export const Route = createRootRouteWithContext<MyRouterContext>()({
   component: Root,
 })
 
@@ -16,10 +21,10 @@ function Root() {
           Home
         </Link>{' '}
         <Link
-          to="/about"
+          to="/chat"
           className="[&.active]:font-bold"
         >
-          About
+          Chat
         </Link>
       </div>
       <hr />

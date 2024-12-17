@@ -7,6 +7,10 @@ import { routeTree } from './routeTree.gen'
 const router = createRouter({
   routeTree,
   defaultPreload: 'intent',
+  context: {
+    isAuthenticated: true,
+    user: { id: 12 }
+  }
 })
 
 // Register things for typesafety
