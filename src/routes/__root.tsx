@@ -1,4 +1,5 @@
-import { Link, Outlet, createRootRoute, createRootRouteWithContext } from '@tanstack/react-router'
+import App from '@/App'
+import { Link, createRootRouteWithContext } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 
 type MyRouterContext = {
@@ -28,7 +29,8 @@ function Root() {
         </Link>
       </div>
       <hr />
-      <Outlet />
+      {/* <Outlet /> */}
+      <App />
       <TanStackRouterDevtools position="bottom-right" />
     </>
   )

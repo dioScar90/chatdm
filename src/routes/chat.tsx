@@ -1,6 +1,6 @@
+import { ChatBubble } from '@/components/chat-bubble'
+import { ChatVoiceMessage } from '@/components/chat-voice-message'
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { ChatBubble } from '../components/chat-bubble'
-import { ChatVoiceMessage } from '../components/chat-voice-message'
 
 export const Route = createFileRoute('/chat')({
   component: Chat,
