@@ -1,5 +1,6 @@
 import { Code } from "@/components/typography/code";
-import { Link } from "@/components/typography/link";
+import { Link } from "@tanstack/react-router";
+// import { Link } from "@/components/typography/link";
 import { Component, ReactNode } from "react";
 
 // NOTE: Once you get Clerk working you can simplify this error boundary
@@ -33,7 +34,7 @@ export class ErrorBoundary extends Component<
             {clerkDashboardUrl ? (
               <p>
                 You can find it at{" "}
-                <Link href={clerkDashboardUrl} target="_blank">
+                <Link to={clerkDashboardUrl} target="_blank">
                   {clerkDashboardUrl}
                 </Link>
               </p>

@@ -1,5 +1,5 @@
 import { ClerkProvider, useAuth } from "@clerk/clerk-react";
-import { ConvexReactClient } from "convex/react";
+import { ConvexReactClient, useConvexAuth } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
@@ -13,10 +13,7 @@ import { routeTree } from './routeTree.gen'
 // Create a new router instance
 const router = createRouter({
   routeTree,
-  context: {
-    isAuthenticated: true,
-    user: { id: 12 }
-  }
+  context: undefined!,
 })
 
 declare module '@tanstack/react-router' {
@@ -25,6 +22,7 @@ declare module '@tanstack/react-router' {
   }
 }
 
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 
 // Render the app
@@ -34,14 +32,17 @@ if (!rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <ErrorBoundary>
-        <ClerkProvider
-          publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
-        >
+        <ClerkProvider publishableKey={clerkPubKey}>
           <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-            <RouterProvider router={router} />
+            <RouterProviderWithAuthContext />
           </ConvexProviderWithClerk>
         </ClerkProvider>
       </ErrorBoundary>
     </StrictMode>
   )
+}
+
+function RouterProviderWithAuthContext() {
+  // const { isAuthenticated } = useConvexAuth()
+  return <RouterProvider router={router} context={useConvexAuth()} />
 }
