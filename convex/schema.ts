@@ -7,19 +7,20 @@ import { v } from "convex/values";
 
 export default defineSchema(
   {
-    documents: defineTable({
-      fieldOne: v.string(),
-      fieldTwo: v.object({
-        subFieldOne: v.array(v.number()),
-      }),
-    }),
-    // This definition matches the example query and mutation code:
-    numbers: defineTable({
-      value: v.number(),
-    }),
+    // documents: defineTable({
+    //   fieldOne: v.string(),
+    //   fieldTwo: v.object({
+    //     subFieldOne: v.array(v.number()),
+    //   }),
+    // }),
+    // // This definition matches the example query and mutation code:
+    // numbers: defineTable({
+    //   value: v.number(),
+    // }),
     messages: defineTable({
       body: v.string(),
       user: v.string(),
+      userId: v.optional(v.string()),
     })
   },
   // If you ever get an error about schema mismatch

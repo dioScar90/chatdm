@@ -1,6 +1,8 @@
-import { ChatBubble } from '@/components/chat-bubble'
-import { ChatVoiceMessage } from '@/components/chat-voice-message'
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect, useLoaderData } from '@tanstack/react-router'
+import { useMutation, useQuery } from 'convex/react'
+import { api } from '../../convex/_generated/api'
+import { useEffect, useState } from 'react'
+import "@/chat.css"
 
 export const Route = createFileRoute('/chat')({
   component: Chat,
@@ -9,19 +11,62 @@ export const Route = createFileRoute('/chat')({
       return redirect({ to: '/', replace: true })
     }
   },
+  loader: ({ context }) => context?.user!
 })
 
 function Chat() {
-  return (
-    <div className="p-2">
-      <h3>Chat</h3>
+  const user = useLoaderData({ from: '/chat' })
+  
+  const messages = useQuery(api.chat.getMessages);
+  
+  const sendMessage = useMutation(api.chat.sendMessage);
 
-      <div className="p-2 border-2 border-indigo-600 w-[95vw] md:max-w-[800px]">
-        <ChatBubble>Oi</ChatBubble>
-        <ChatBubble right>Tduo bem?</ChatBubble>
-        <ChatVoiceMessage></ChatVoiceMessage>
-        <ChatBubble>Aff de novo mandando áudio...</ChatBubble>
-      </div>
+  const [newMessageText, setNewMessageText] = useState('');
+
+  useEffect(() => {
+    // Make sure scrollTo works on button click in Chrome
+    setTimeout(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }, 0);
+  }, [messages]);
+  
+  return (
+    <div className="chat">
+      <header>
+        <h1>Convex Chat</h1>
+        <p>
+          Connected as <strong>{user.firstName}</strong>
+        </p>
+      </header>
+      {messages?.map((message) => (
+        <article
+          key={message._id}
+          className={message.userId === user.id ? "message-mine" : ""}
+        >
+          <div>{message.user}</div>
+
+          <p>{message.body}</p>
+        </article>
+      ))}
+      <form
+        onSubmit={async (e) => {
+          e.preventDefault();
+          await sendMessage({ user: user.firstName!, userId: user.id, body: newMessageText });
+          setNewMessageText("");
+        }}
+      >
+        <input
+          value={newMessageText}
+          onChange={async (e) => {
+            const text = e.target.value;
+            setNewMessageText(text);
+          }}
+          placeholder="Write a message…"
+        />
+        <button type="submit" disabled={!newMessageText}>
+          Send
+        </button>
+      </form>
     </div>
-  )
+  );
 }

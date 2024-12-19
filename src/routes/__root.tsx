@@ -1,16 +1,22 @@
 import { Button } from '@/components/ui/button'
-import { SignInButton } from '@clerk/clerk-react'
-import { Link, Outlet, createRootRouteWithContext } from '@tanstack/react-router'
+import { SignInButton, useUser } from '@clerk/clerk-react'
+import { Link, Outlet, createRootRouteWithContext, useLoaderData } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { Authenticated, Unauthenticated, useConvexAuth } from 'convex/react'
 
-type MyRouterContext = ReturnType<typeof useConvexAuth>
+type MyRouterContext = {
+  isAuthenticated: ReturnType<typeof useConvexAuth>['isAuthenticated']
+  user: ReturnType<typeof useUser>['user']
+}
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   component: Root,
+  loader: ({ context }) => context?.user
 })
 
 function Root() {
+  const user = useLoaderData({ from: '__root__' })
+
   return (
     <>
       <div className="p-2 flex gap-2 text-lg">
@@ -19,7 +25,7 @@ function Root() {
           className="[&.active]:font-bold"
         >
           Home
-        </Link>{' '}
+        </Link>
         <Authenticated>
           <Link
             to="/chat"
@@ -35,29 +41,29 @@ function Root() {
           </Link>
         </Authenticated>
       </div>
+
       <hr />
-      <Main />
+      
+      <main className="container max-w-2xl flex flex-col gap-8">
+        <h1 className="text-4xl font-extrabold my-8 text-center">
+          Convex + React (Vite) + Clerk Auth
+        </h1>
+        {user && (
+          <p>Logged with: <strong>{user.fullName}</strong></p>
+        )}
+        <Authenticated>
+          <Outlet />
+        </Authenticated>
+        <Unauthenticated>
+          <div className="flex justify-center">
+            <SignInButton mode="modal">
+              <Button>Sign in</Button>
+            </SignInButton>
+          </div>
+        </Unauthenticated>
+      </main>
+      
       <TanStackRouterDevtools position="bottom-right" />
     </>
   )
-}
-
-function Main() {
-  return (
-    <main className="container max-w-2xl flex flex-col gap-8">
-      <h1 className="text-4xl font-extrabold my-8 text-center">
-        Convex + React (Vite) + Clerk Auth
-      </h1>
-      <Authenticated>
-        <Outlet />
-      </Authenticated>
-      <Unauthenticated>
-        <div className="flex justify-center">
-          <SignInButton mode="modal">
-            <Button>Sign in</Button>
-          </SignInButton>
-        </div>
-      </Unauthenticated>
-    </main>
-  );
 }

@@ -1,4 +1,4 @@
-import { ClerkProvider, useAuth } from "@clerk/clerk-react";
+import { ClerkProvider, useAuth, useUser } from "@clerk/clerk-react";
 import { ConvexReactClient, useConvexAuth } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { StrictMode } from "react";
@@ -43,6 +43,7 @@ if (!rootElement.innerHTML) {
 }
 
 function RouterProviderWithAuthContext() {
-  // const { isAuthenticated } = useConvexAuth()
-  return <RouterProvider router={router} context={useConvexAuth()} />
+  const { isAuthenticated } = useConvexAuth()
+  const { user } = useUser()
+  return <RouterProvider router={router} context={{ isAuthenticated, user }} />
 }

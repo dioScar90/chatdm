@@ -1,11 +1,6 @@
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/clerk-react";
-import {
-  useMutation,
-  useQuery,
-} from "convex/react";
-import { api } from "../../convex/_generated/api";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, useLoaderData } from "@tanstack/react-router";
 
 export const Route = createFileRoute('/about')({
   component: About,
@@ -14,40 +9,22 @@ export const Route = createFileRoute('/about')({
       return redirect({ to: '/', replace: true })
     }
   },
+  loader: ({ context }) => context?.user!
 })
 
 function About() {
-  const { numbers, viewer } =
-    useQuery(api.myFunctions.listNumbers, {
-      count: 10,
-    }) ?? {};
-  const addNumber = useMutation(api.myFunctions.addNumber);
-
+  const user = useLoaderData({ from: '/about' })
+  
   return (
     <>
-      <p>Welcome {viewer}!</p>
+      <p>Welcome {user?.firstName}!</p>
       <p className="flex gap-4 items-center">
         This is you:
-        <UserButton afterSignOutUrl="#" />
+        <UserButton afterSignOutUrl="/" />
       </p>
       <p>
         Click the button below and open this page in another window - this data
         is persisted in the Convex cloud database!
-      </p>
-      <p>
-        <Button
-          onClick={() => {
-            void addNumber({ value: Math.floor(Math.random() * 10) });
-          }}
-        >
-          Add a random number
-        </Button>
-      </p>
-      <p>
-        Numbers:{" "}
-        {numbers?.length === 0
-          ? "Click the button!"
-          : numbers?.join(", ") ?? "..."}
       </p>
       <p>
         Edit{" "}
