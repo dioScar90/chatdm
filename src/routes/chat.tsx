@@ -1,8 +1,7 @@
-import { createFileRoute, redirect, useLoaderData } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { useEffect, useState } from 'react'
-import "@/chat.css"
 
 export const Route = createFileRoute('/chat')({
   component: Chat,
@@ -11,11 +10,11 @@ export const Route = createFileRoute('/chat')({
       return redirect({ to: '/', replace: true })
     }
   },
-  loader: ({ context }) => context?.user!
+  loader: ({ context }) => context?.user!,
 })
 
 function Chat() {
-  const user = useLoaderData({ from: '/chat' })
+  const user = Route.useLoaderData()
   
   const messages = useQuery(api.chat.getMessages);
   
@@ -31,42 +30,44 @@ function Chat() {
   }, [messages]);
   
   return (
-    <div className="chat">
-      <header>
-        <h1>Convex Chat</h1>
-        <p>
-          Connected as <strong>{user.firstName}</strong>
-        </p>
-      </header>
-      {messages?.map((message) => (
-        <article
-          key={message._id}
-          className={message.userId === user.id ? "message-mine" : ""}
-        >
-          <div>{message.user}</div>
+    <>
+      <div className="chat">
+        <header>
+          <h1>Convex Chat</h1>
+          <p>
+            Connected as <strong>{user.firstName}</strong>
+          </p>
+        </header>
+        {messages?.map((message) => (
+          <article
+            key={message._id}
+            className={message.userId === user.id ? "message-mine" : ""}
+          >
+            <div>{message.user}</div>
 
-          <p>{message.body}</p>
-        </article>
-      ))}
-      <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          await sendMessage({ user: user.firstName!, userId: user.id, body: newMessageText });
-          setNewMessageText("");
-        }}
-      >
-        <input
-          value={newMessageText}
-          onChange={async (e) => {
-            const text = e.target.value;
-            setNewMessageText(text);
+            <p>{message.body}</p>
+          </article>
+        ))}
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            await sendMessage({ user: user.firstName!, userId: user.id, body: newMessageText });
+            setNewMessageText("");
           }}
-          placeholder="Write a message…"
-        />
-        <button type="submit" disabled={!newMessageText}>
-          Send
-        </button>
-      </form>
-    </div>
+        >
+          <input
+            value={newMessageText}
+            onChange={async (e) => {
+              const text = e.target.value;
+              setNewMessageText(text);
+            }}
+            placeholder="Write a message…"
+          />
+          <button type="submit" disabled={!newMessageText}>
+            Send
+          </button>
+        </form>
+      </div>
+    </>
   );
 }

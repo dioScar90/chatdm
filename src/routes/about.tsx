@@ -1,6 +1,6 @@
 // import { Button } from "@/components/ui/button";
 import { UserButton } from "@clerk/clerk-react";
-import { createFileRoute, redirect, useLoaderData } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute('/about')({
   component: About,
@@ -13,7 +13,7 @@ export const Route = createFileRoute('/about')({
 })
 
 function About() {
-  const user = useLoaderData({ from: '/about' })
+    const user = Route.useLoaderData()
   
   return (
     <>

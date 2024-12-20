@@ -1,8 +1,8 @@
-import { Button } from '@/components/ui/button'
-import { SignInButton, useUser } from '@clerk/clerk-react'
-import { Link, Outlet, createRootRouteWithContext, useLoaderData } from '@tanstack/react-router'
+import { useUser } from '@clerk/clerk-react'
+import { Outlet, createRootRouteWithContext } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-import { Authenticated, Unauthenticated, useConvexAuth } from 'convex/react'
+import { useConvexAuth } from 'convex/react'
+import { NavbarMenu } from '@/components/ui/navbar-menu'
 
 type MyRouterContext = {
   isAuthenticated: ReturnType<typeof useConvexAuth>['isAuthenticated']
@@ -11,56 +11,21 @@ type MyRouterContext = {
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   component: Root,
-  loader: ({ context }) => context?.user
 })
 
 function Root() {
-  const user = useLoaderData({ from: '__root__' })
-
   return (
     <>
-      <div className="p-2 flex gap-2 text-lg">
-        <Link
-          to="/"
-          className="[&.active]:font-bold"
-        >
-          Home
-        </Link>
-        <Authenticated>
-          <Link
-            to="/chat"
-            className="[&.active]:font-bold"
-          >
-            Chat
-          </Link>
-          <Link
-            to="/about"
-            className="[&.active]:font-bold"
-          >
-            About
-          </Link>
-        </Authenticated>
-      </div>
+      <NavbarMenu />
 
       <hr />
       
       <main className="container max-w-2xl flex flex-col gap-8">
-        <h1 className="text-4xl font-extrabold my-8 text-center">
-          Convex + React (Vite) + Clerk Auth
+        <h1 className="text-4xl font-extrabold my-8 text-center main-header-of-page">
+          ChatMD
         </h1>
-        {user && (
-          <p>Logged with: <strong>{user.fullName}</strong></p>
-        )}
-        <Authenticated>
-          <Outlet />
-        </Authenticated>
-        <Unauthenticated>
-          <div className="flex justify-center">
-            <SignInButton mode="modal">
-              <Button>Sign in</Button>
-            </SignInButton>
-          </div>
-        </Unauthenticated>
+        
+        <Outlet />
       </main>
       
       <TanStackRouterDevtools position="bottom-right" />

@@ -1,8 +1,4 @@
-* {
-  box-sizing: border-box;
-}
-
-:root {
+.chat {
   --primary: #f35d1c;
   --primary-text: #111827;
   --secondary-text: #374151;
@@ -13,10 +9,8 @@
   --focus-ring: #3b82f680;
 
   color-scheme: light dark;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
+  
+  @media (prefers-color-scheme: dark) {
     --primary: #f35d1c;
     --primary-text: #f9fafb;
     --secondary-text: #f3f4f6;
@@ -27,13 +21,19 @@
   }
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
+#root:has(.chat) {
+  position: relative;
 }
 
-body {
+#root:has(.chat) .main-header-of-page {
+  display: none;
+}
+
+.chat header {
+  position: absolute;
+}
+
+.chat {
   font-family:
     system-ui,
     -apple-system,
@@ -49,17 +49,16 @@ body {
   -webkit-font-smoothing: antialiased;
   background-color: var(--secondary-background);
 
-  padding-top: 96px;
+  /* padding-top: 96px; */
   padding-bottom: 72px;
 }
 
-button {
+html:has(body .chat) button {
   cursor: pointer;
 }
 
 .chat header {
-  position: fixed;
-  top: 0;
+  position: absolute;
   left: 0;
   width: 100%;
   z-index: 3;
@@ -313,7 +312,7 @@ button {
   opacity: 0.7;
 }
 
-article button {
+.chat article button {
   position: absolute;
   bottom: -0.5em;
   right: -0.5em;
@@ -325,16 +324,16 @@ article button {
   min-height: 1em;
 }
 
-article button {
+.chat article button {
   display: none;
   cursor: pointer;
 }
 
-article:hover button,
-article button:has(span) {
+.chat article:hover button,
+.chat article button:has(span) {
   display: block;
 }
 
-article button span {
+.chat article button span {
   padding-left: 0.2em;
 }
