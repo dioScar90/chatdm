@@ -1,8 +1,8 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { useForm } from '@tanstack/react-form'
+import { FieldApi, useForm } from '@tanstack/react-form'
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 export const Route = createFileRoute('/chat')({
   component: Chat,
@@ -16,28 +16,34 @@ export const Route = createFileRoute('/chat')({
   }
 })
 
-function Messages({ currentUserId }: { currentUserId: string }) {
-  const messages = useQuery(api.chat.getMessages)
-
-  useEffect(() => {
-    // Make sure scrollTo works on button click in Chrome
-    setTimeout(() => {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })
-    }, 0)
-  }, [messages])
-
+function Chat() {
+  const user = Route.useLoaderData()
+  
   return (
     <>
-      {messages?.map((message) => (
-        <article
-          key={message._id}
-          className={message.userId === currentUserId ? 'message-mine' : ''}
-        >
-          <div>{message.user}</div>
+      <div className="chat">
+        <header>
+          <h1>Convex Chat</h1>
+          <p>
+            Connected as <strong>{user.firstName}</strong>
+          </p>
+        </header>
 
-          <p>{message.body}</p>
-        </article>
-      ))}
+        <Messages currentUserId={user.id} />
+        
+        <FormNewMessage userFirstName={user.firstName!} userId={user.id} />
+      </div>
+    </>
+  );
+}
+
+function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
+  return (
+    <>
+      {field.state.meta.isTouched && field.state.meta.errors.length ? (
+        <em>{field.state.meta.errors.join(", ")}</em>
+      ) : null}
+      {field.state.meta.isValidating ? 'Validating...' : null}
     </>
   )
 }
@@ -90,37 +96,71 @@ function FormNewMessage({ userFirstName, userId }: { userFirstName: string, user
               onChange={e => field.handleChange(e.target.value)}
               placeholder="Write a message…"
             />
-            {field.state.meta.errors && (
-              <p className="text-red-500 text-sm">{field.state.meta.errors.join(', ')}</p>
-            )}
+            <FieldInfo field={field} />
           </>
         )}
       />
-
-      <button type="submit" disabled={form.state.isSubmitting}>
-        Send
-      </button>
+      
+      <form.Subscribe
+        selector={(state) => [state.canSubmit, state.isSubmitting]}
+        children={([canSubmit, isSubmitting]) => (
+          <button type="submit" disabled={!canSubmit}>
+            {isSubmitting ? '...' : 'Send'}
+          </button>
+        )}
+      />
     </form>
   )
 }
 
-function Chat() {
-  const user = Route.useLoaderData()
-  
-  return (
-    <>
-      <div className="chat">
-        <header>
-          <h1>Convex Chat</h1>
-          <p>
-            Connected as <strong>{user.firstName}</strong>
-          </p>
-        </header>
+function Messages({ currentUserId }: { currentUserId: string }) {
+  const messages = useQuery(api.chat.getMessages)
+  const ref = useRef<HTMLDivElement>(null)
 
-        <Messages currentUserId={user.id} />
-        
-        <FormNewMessage userFirstName={user.firstName!} userId={user.id} />
-      </div>
-    </>
-  );
+  function getDateIntoString(timestamp: number) {
+    const date = new Date(timestamp)
+    return date.toLocaleDateString('pt-BR').split('/').slice(0, 2).join('/')
+  }
+
+  function getDateIntoIso(timestamp: number) {
+    const date = new Date(timestamp)
+    return date.toISOString()
+  }
+  
+  useEffect(() => {
+    const observe = new MutationObserver((mutations) => {
+      mutations.forEach(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })
+      })
+    })
+
+    if (ref.current) {
+      observe.observe(ref.current, { childList: true })
+    }
+
+    return () => observe.disconnect()
+  }, [ref])
+
+  return (
+    <div ref={ref}>
+      {messages?.map((message) => (
+        <article
+          key={message._id}
+          className={message.userId === currentUserId ? 'message-mine' : ''}
+        >
+          <div>
+            {message.user}{', '}
+            <time
+              dateTime={getDateIntoIso(message._creationTime)}
+              className="text-muted-foreground"
+            >
+              {getDateIntoString(message._creationTime)}
+            </time>
+          </div>
+
+          <p>{message.body}</p>
+        </article>
+      ))}
+    </div>
+  )
 }
