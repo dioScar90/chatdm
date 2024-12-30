@@ -3,6 +3,7 @@ import { FieldApi, useForm } from '@tanstack/react-form'
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { useEffect, useRef } from 'react'
+import { z } from 'zod'
 
 export const Route = createFileRoute('/chat')({
   component: Chat,
@@ -41,22 +42,46 @@ function FieldInfo({ field }: { field: FieldApi<any, any, any, any> }) {
   return (
     <>
       {field.state.meta.isTouched && field.state.meta.errors.length ? (
-        <em>{field.state.meta.errors.join(", ")}</em>
+        <em className="text-red-500">{field.state.meta.errors.join(", ")}</em>
       ) : null}
-      {field.state.meta.isValidating ? 'Validating...' : null}
+      {/* {field.state.meta.isValidating ? 'Validating...' : null} */}
     </>
   )
 }
+
+const messageSchema = z.string()
+  .min(1, 'Message must not be empty')
+  .max(255, 'Message must not have more than 255 characters')
+  
+const schema = z.object({
+  message: messageSchema
+})
+  .refine((value) => value.message.trim() !== '', {
+    message: 'Message must not contain only whitespaces',
+    path: ['message']
+  })
 
 function FormNewMessage({ userFirstName, userId }: { userFirstName: string, userId: string }) {
   const sendMessage = useMutation(api.chat.sendMessage)
 
   const form = useForm({
     defaultValues: {
-      body: '',
+      message: '',
+    },
+    validators: {
+      onSubmit: schema,
+      onChangeAsync: schema,
+      // onChangeAsync({ value, formApi }) {
+      //   if (formApi.state.submissionAttempts > 0 && formApi.state.isDirty) {
+      //     return schema.safeParse(value).error?.message
+      //   }
+        
+      //   return undefined
+      // },
+      onChangeAsyncDebounceMs: 200,
     },
     onSubmit: async ({ value }) => {
-      await sendMessage({ user: userFirstName, userId, body: value.body })
+      await sendMessage({ user: userFirstName, userId, body: value.message })
     },
   })
   
@@ -66,27 +91,11 @@ function FormNewMessage({ userFirstName, userId }: { userFirstName: string, user
         e.preventDefault()
         e.stopPropagation()
         form.handleSubmit()
+        // form.reset()
       }}
     >
       <form.Field
-        name="body"
-        validators={{
-          onChange({ value }) {
-            if (!value) {
-              return 'Message must not be empty'
-            }
-
-            if (value?.trim() === '') {
-              return 'Message must not contain only whitespaces'
-            }
-
-            if (value.length > 255) {
-              return 'Message must not have more than 255 characters'
-            }
-
-            return undefined
-          }
-        }}
+        name="message"
         children={(field) => (
           <>
             <input
@@ -102,9 +111,9 @@ function FormNewMessage({ userFirstName, userId }: { userFirstName: string, user
       />
       
       <form.Subscribe
-        selector={(state) => [state.canSubmit, state.isSubmitting]}
-        children={([canSubmit, isSubmitting]) => (
-          <button type="submit" disabled={!canSubmit}>
+        selector={(state) => [state.isSubmitting]}
+        children={([isSubmitting]) => (
+          <button type="submit" disabled={isSubmitting}>
             {isSubmitting ? '...' : 'Send'}
           </button>
         )}
